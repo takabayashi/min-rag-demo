@@ -1,0 +1,18 @@
+[project]
+name = "min-rag-demo"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = [
+    "chromadb>=1.0.20",
+    "ipykernel>=6.30.1",
+    "jupyterlab>=4.4.6",
+    "langchain>=0.3.27",
+    "langchain-community>=0.3.27",
+    "langchain-ollama>=0.3.7",
+    "langchain-openai>=0.3.31",
+    "pypdf>=6.0.0",
+    "python-dotenv>=1.1.1",
+    "sentence-transformers>=5.1.0",
+]
