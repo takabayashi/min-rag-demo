@@ -69,7 +69,7 @@ def create_vectorstore(documents: [Document]) -> VectorStore:
 
     return vectorstore
 
-def create_retriever(vs, threshold=1, k=100) -> VectorStoreRetriever:
+def create_retriever(vs, threshold=1, k=10) -> VectorStoreRetriever:
     class ScoredRetriever(BaseRetriever):
         vs: VectorStore
         k: int
@@ -149,7 +149,8 @@ def setup_rag_system():
 def process_query(rag, query):
     """Process a query and return answer with references"""
     try:
-        resp = rag.invoke({"input": query})
+        # resp = rag.invoke({"input": query})
+        resp = rag.get_relevant_documents({"input": query})
         
         # Format the response
         print(f"\nAnswer: {resp['answer']}")
