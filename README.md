@@ -1,6 +1,8 @@
 # Min RAG Demo
 
-A RAG (Retrieval-Augmented Generation) demonstration project using LangChain.
+A stateless RAG (Retrieval-Augmented Generation) demonstration project using LangChain. 
+In this demo a FAQ assitent is simulate. the context of the assisten is define by the .md files available on the ./docs folder.
+This repo is just an example of basic steps needed for build a RAG system to work properly and is not recomended for production enviroments.
 
 ## Setup
 
@@ -165,7 +167,7 @@ uv remove package-name
 ### Supported File Types
 Currently supported: `.md` (Markdown files only)
 
-To add support for more file types, modify the `load_documents_from_directory()` function in `main.py`.
+To add support for more file types, modify the `load_documents_from_directory()` function in `main.py` or just add more files to the ./docs folder.
 
 ### Chunking Strategy
 Document chunking can be adjusted in the `setup_rag_system()` function:
