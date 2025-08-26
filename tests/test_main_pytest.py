@@ -4,7 +4,6 @@ Unit tests for the main RAG system using pytest
 
 import pytest
 from unittest.mock import patch, MagicMock
-from pathlib import Path
 import sys
 import os
 

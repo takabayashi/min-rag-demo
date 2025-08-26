@@ -10,11 +10,11 @@ from langchain.text_splitter import MarkdownHeaderTextSplitter, MarkdownTextSpli
 from langchain.schema import Document
 from langchain.vectorstores.base import VectorStoreRetriever
 from langchain_community.vectorstores import Chroma
-from langchain_core.retrievers import BaseRetriever
 from langchain.prompts import ChatPromptTemplate
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains import create_retrieval_chain
 from langchain_ollama import ChatOllama, OllamaEmbeddings
+from langchain.memory import ConversationBufferMemory
 
 from config import *
 
@@ -182,7 +182,18 @@ def setup_rag_system():
 
     # Create the RAG chain
     qa_chain = create_stuff_documents_chain(llm, qa_prompt)
-    rag = create_retrieval_chain(retriever, qa_chain)
+    
+    
+    if STATEFUL_RAG:
+        # add short term memory to the system
+        memory = ConversationBufferMemory(
+            memory_key="chat_history",
+            return_messages=True
+        )
+
+        rag = create_retrieval_chain(retriever, qa_chain, memory=memory)
+    else:
+        rag = create_retrieval_chain(retriever, qa_chain)
     
     return rag
 

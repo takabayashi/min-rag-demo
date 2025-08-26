@@ -5,7 +5,6 @@ Tests for RAG system using local model validation (no mocks)
 import pytest
 import os
 import sys
-from pathlib import Path
 
 # Add the parent directory to the path so we can import main
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
