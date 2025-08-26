@@ -2,7 +2,6 @@
 Min RAG Demo - A simple RAG system for FAQ documents
 """
 
-import os
 from datetime import datetime
 from dotenv import load_dotenv
 

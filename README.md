@@ -41,6 +41,7 @@ source .venv/bin/activate  # Linux/macOS
 - **langchain-ollama**: Ollama integration for local LLMs
 - **chromadb**: Vector database
 - **python-dotenv**: Environment variable management
+- **pytest**: Testing framework
 
 ## Usage
 
@@ -123,9 +124,16 @@ min-rag-demo/
 │   ├── java_collections_faq.md
 │   ├── java_exceptions_faq.md
 │   └── java_frameworks_faq.md
+├── tests/               # Test files
+│   ├── __init__.py
+│   ├── test_main.py
+│   ├── test_main_pytest.py
+│   ├── test_rag_system.py
+│   └── test_local_model_validation.py
 ├── main.py              # Main application file
 ├── config.py            # Configuration settings
 ├── pyproject.toml       # Project configuration
+├── pytest.ini          # Pytest configuration
 ├── uv.lock             # Dependency lock file
 ├── README.md           # This file
 ├── .gitignore          # Git ignore file
@@ -161,6 +169,90 @@ To remove dependencies:
 ```bash
 uv remove package-name
 ```
+
+## Testing
+
+This project includes comprehensive unit and integration tests to ensure code quality and reliability.
+
+### Running Tests
+
+Run all tests:
+```bash
+python -m pytest
+```
+
+Run tests with verbose output:
+```bash
+python -m pytest -v
+```
+
+Run only unit tests (no integration tests):
+```bash
+python -m pytest -m "not integration"
+```
+
+Run only integration tests (requires Ollama running):
+```bash
+python -m pytest -m integration
+```
+
+Run a specific test file:
+```bash
+python -m pytest tests/test_main_pytest.py
+```
+
+Run RAG system tests (requires Ollama running):
+```bash
+python -m pytest tests/test_rag_system.py -v
+```
+
+Run local model validation tests (requires Ollama running):
+```bash
+python -m pytest tests/test_local_model_validation.py -v
+```
+
+Run a specific test:
+```bash
+python -m pytest tests/test_main_pytest.py::TestSplitDocuments::test_split_documents_basic
+```
+
+### Test Coverage
+
+Currently, the tests cover:
+- Document splitting functionality
+- Edge cases (empty text, no headers)
+- Large text handling
+- Metadata preservation
+- Prompt template creation and validation
+- Security features in prompts
+- Mock examples for external dependencies
+- **Integration tests with real local models**
+- **RAG system validation using actual Ollama models**
+- **Prompt quality and response validation**
+- **Context relevance testing**
+- **Complex query handling**
+
+### Test Files
+
+- `tests/test_main.py` - Basic unittest tests
+- `tests/test_main_pytest.py` - Comprehensive pytest tests
+- `tests/test_rag_system.py` - **Integration tests for RAG system using real local models**
+- `tests/test_local_model_validation.py` - **Advanced validation tests using local models**
+
+### Integration Tests
+
+The integration tests require:
+- Ollama running locally
+- The `deepseek-r1` model available in Ollama
+- Documents in the `docs/` folder
+
+These tests validate:
+- Real RAG system functionality
+- Local model response quality
+- Context relevance and accuracy
+- Prompt injection protection
+- Response consistency
+- Complex query handling
 
 ## Customization
 

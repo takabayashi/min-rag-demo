@@ -13,6 +13,7 @@ dependencies = [
     "langchain-ollama>=0.3.7",
     "langchain-openai>=0.3.31",
     "pypdf>=6.0.0",
+    "pytest>=8.4.1",
     "python-dotenv>=1.1.1",
     "sentence-transformers>=5.1.0",
 ]
