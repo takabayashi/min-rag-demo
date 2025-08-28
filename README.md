@@ -267,7 +267,7 @@ Document chunking can be adjusted in the `setup_rag_system()` function:
 text_splitter = RecursiveCharacterTextSplitter(
     chunk_size=1000,        # Adjust chunk size
     chunk_overlap=200,      # Adjust overlap
-    separators=["\n\n", "\n", " ", ""]
+    separators=["Q:", "\n", " ", ""]
 )
 ```
 
@@ -276,3 +276,370 @@ Modify retrieval parameters:
 ```python
 retriever=vectorstore.as_retriever(search_kwargs={"k": 3})  # Number of documents to retrieve
 ```
+
+## Production Deployment & Scaling
+
+This section provides guidance on scaling and deploying the RAG system to production environments.
+
+### 🚀 **Deployment Options & Tradeoffs**
+
+#### **1. Containerized Deployment (Docker)**
+**Pros:**
+- ✅ Consistent environment across deployments
+- ✅ Easy scaling and orchestration
+- ✅ Version control for dependencies
+
+**Cons:**
+- ❌ Additional complexity for simple deployments
+- ❌ Container overhead
+
+#### **2. Cloud Deployment**
+**AWS ECS/Fargate:**
+- ✅ Managed container orchestration
+- ✅ Auto-scaling capabilities
+- ❌ Vendor lock-in
+
+**Google Cloud Run:**
+- ✅ Serverless containers
+- ✅ Pay-per-use pricing
+- ❌ Cold start latency
+
+**Azure Container Instances:**
+- ✅ Simple deployment
+- ✅ Integration with Azure services
+- ❌ Limited scaling options
+
+#### **3. Serverless Deployment**
+**Pros:**
+- ✅ No infrastructure management
+- ✅ Automatic scaling
+- ✅ Pay-per-use
+
+**Cons:**
+- ❌ Cold start latency
+- ❌ Limited execution time
+- ❌ Memory constraints
+
+### 📈 **Scaling Strategies & Tradeoffs**
+
+#### **1. Vector Database Scaling**
+
+**ChromaDB (Current):**
+```
+┌─────────────┐
+│   ChromaDB  │ ← Local file-based storage
+│   (Local)   │
+└─────────────┘
+```
+**Tradeoffs:**
+- ✅ Simple setup, no external dependencies
+- ❌ No horizontal scaling, single point of failure
+- ❌ Limited concurrent access
+
+**Production Alternatives:**
+
+**Pinecone (Managed):**
+```
+┌─────────────┐    ┌─────────────┐
+│   Client    │───▶│  Pinecone   │ ← Cloud-managed vector DB
+│             │    │   (Cloud)   │
+└─────────────┘    └─────────────┘
+```
+**Tradeoffs:**
+- ✅ Fully managed, automatic scaling
+- ✅ High availability
+- ❌ Vendor lock-in, ongoing costs
+
+**Weaviate (Self-hosted):**
+```
+┌─────────────┐    ┌─────────────┐
+│   Client    │───▶│  Weaviate   │ ← Self-hosted vector DB
+│             │    │ (Cluster)   │
+└─────────────┘    └─────────────┘
+```
+**Tradeoffs:**
+- ✅ Full control, no vendor lock-in
+- ✅ Horizontal scaling
+- ❌ Operational overhead
+
+#### **2. LLM Scaling**
+
+**Current (Ollama Local):**
+```
+┌─────────────┐
+│   Ollama    │ ← Local LLM inference
+│   (Local)   │
+└─────────────┘
+```
+**Tradeoffs:**
+- ✅ No API costs, privacy
+- ❌ Limited model selection
+- ❌ Resource intensive
+
+**Production Alternatives:**
+
+**OpenAI API:**
+```
+┌─────────────┐    ┌─────────────┐
+│   Client    │───▶│   OpenAI    │ ← Cloud LLM API
+│             │    │    API      │
+└─────────────┘    └─────────────┘
+```
+**Tradeoffs:**
+- ✅ Best model quality, reliability
+- ❌ High costs, data privacy concerns
+
+**Anthropic Claude:**
+```
+┌─────────────┐    ┌─────────────┐
+│   Client    │───▶│  Anthropic  │ ← Alternative cloud LLM
+│             │    │    API      │
+└─────────────┘    └─────────────┘
+```
+**Tradeoffs:**
+- ✅ Good quality, competitive pricing
+- ❌ Still cloud-dependent
+
+### 🏗️ **Architecture Patterns**
+
+#### **1. Monolithic Architecture (Current)**
+```
+┌─────────────────────────────────────┐
+│           RAG Application           │
+│  ┌─────────┐ ┌─────────┐ ┌─────────┐ │
+│  │  API    │ │  RAG    │ │ Vector  │ │
+│  │ Layer   │ │ Engine  │ │ Store   │ │
+│  └─────────┘ └─────────┘ └─────────┘ │
+└─────────────────────────────────────┘
+```
+**Tradeoffs:**
+- ✅ Simple deployment and debugging
+- ❌ Difficult to scale individual components
+- ❌ Single point of failure
+
+#### **2. Microservices Architecture**
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   API       │───▶│   RAG       │───▶│  Vector     │
+│ Gateway     │    │ Service     │    │ Store       │
+└─────────────┘    └─────────────┘    └─────────────┘
+       │                   │                   │
+       ▼                   ▼                   ▼
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   Load      │    │   LLM       │    │   Document  │
+│ Balancer    │    │ Service     │    │   DB        │
+└─────────────┘    └─────────────┘    └─────────────┘
+```
+**Tradeoffs:**
+- ✅ Independent scaling, fault isolation
+- ❌ Increased complexity, network overhead
+
+#### **3. Event-Driven Architecture**
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│ Document    │───▶│   Kafka     │───▶│  Flink      │
+│ Watcher     │    │  (Events)   │    │ Processing  │
+└─────────────┘    └─────────────┘    └─────────────┘
+                           │                   │
+                           ▼                   ▼
+                   ┌─────────────┐    ┌─────────────┐
+                   │   Vector    │    │   RAG       │
+                   │   Store     │    │   Service   │
+                   └─────────────┘    └─────────────┘
+```
+**Tradeoffs:**
+- ✅ Loose coupling, real-time processing
+- ❌ Complex event management, debugging
+
+### 📊 **Performance Optimization Tradeoffs**
+
+#### **1. Caching Strategies**
+
+**Redis Caching:**
+```
+┌─────────────┐    ┌─────────────┐
+│   Client    │───▶│   Redis     │ ← Cache layer
+│             │    │   Cache     │
+└─────────────┘    └─────────────┘
+       │                   │
+       ▼                   ▼
+┌─────────────┐    ┌─────────────┐
+│   RAG       │    │   Vector    │
+│   Service   │    │   Store     │
+└─────────────┘    └─────────────┘
+```
+**Tradeoffs:**
+- ✅ Faster response times, reduced load
+- ❌ Cache invalidation complexity, memory usage
+
+#### **2. Batch Processing vs Real-time**
+
+**Batch Processing:**
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│ Documents   │───▶│   Batch     │───▶│   Vector    │
+│             │    │ Processor   │    │   Store     │
+└─────────────┘    └─────────────┘    └─────────────┘
+```
+**Tradeoffs:**
+- ✅ Efficient resource usage, cost-effective
+- ❌ Delayed updates, not real-time
+
+**Real-time Processing:**
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│ Documents   │───▶│  Stream     │───▶│   Vector    │
+│             │    │ Processor   │    │   Store     │
+└─────────────┘    └─────────────┘    └─────────────┘
+```
+**Tradeoffs:**
+- ✅ Immediate updates, real-time
+- ❌ Higher resource usage, complexity
+
+### 🔒 **Security & Monitoring Tradeoffs**
+
+#### **1. Authentication Strategies**
+
+**JWT Tokens:**
+- ✅ Stateless, scalable
+- ❌ Token management complexity
+
+**OAuth2:**
+- ✅ Industry standard, secure
+- ❌ Complex implementation
+
+#### **2. Monitoring Approaches**
+
+**OpenTelemetry (Recommended):**
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   RAG       │───▶│ OpenTelemetry│───▶│   Jaeger    │
+│   Service   │    │   Traces    │    │   (Tracing) │
+└─────────────┘    └─────────────┘    └─────────────┘
+       │                   │                   │
+       ▼                   ▼                   ▼
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   Metrics   │    │ Prometheus  │    │ Grafana     │
+│   (OTel)    │    │   (Metrics) │    │ (Dashboard) │
+└─────────────┘    └─────────────┘    └─────────────┘
+```
+**Tradeoffs:**
+- ✅ Comprehensive observability, standards-based
+- ❌ Setup complexity, learning curve
+
+**Simple Logging:**
+- ✅ Easy to implement, familiar
+- ❌ Limited insights, no correlation
+
+## Model Context Protocol (MCP) Integration
+
+The Model Context Protocol (MCP) enables AI assistants to access external data sources and tools. This section shows how to convert the RAG system into an MCP server.
+
+### 🔌 **MCP Architecture Overview**
+
+#### **1. MCP Server Architecture**
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   AI        │───▶│   MCP       │───▶│   RAG       │
+│ Assistant   │    │   Server    │    │   System    │
+└─────────────┘    └─────────────┘    └─────────────┘
+       │                   │                   │
+       ▼                   ▼                   ▼
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   Tools     │    │   Resources │    │   Vector    │
+│ Discovery   │    │ Management  │    │   Store     │
+└─────────────┘    └─────────────┘    └─────────────┘
+```
+
+#### **2. MCP vs Direct Integration**
+
+**Direct Integration:**
+```
+┌─────────────┐    ┌─────────────┐
+│   AI        │───▶│   RAG       │
+│ Assistant   │    │   System    │
+└─────────────┘    └─────────────┘
+```
+**Tradeoffs:**
+- ✅ Direct communication, lower latency
+- ❌ Tight coupling, vendor lock-in
+- ❌ Limited tool discovery
+
+**MCP Integration:**
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   AI        │───▶│   MCP       │───▶│   RAG       │
+│ Assistant   │    │   Protocol  │    │   System    │
+└─────────────┘    └─────────────┘    └─────────────┘
+```
+**Tradeoffs:**
+- ✅ Standardized interface, tool discovery
+- ✅ Loose coupling, extensibility
+- ❌ Additional protocol overhead
+
+### 🔄 **MCP Features & Tradeoffs**
+
+#### **1. Tool Discovery**
+**Benefits:**
+- ✅ Automatic tool discovery by AI assistants
+- ✅ Self-documenting APIs
+- ✅ Dynamic capability exposure
+
+**Tradeoffs:**
+- ❌ Additional implementation complexity
+- ❌ Protocol overhead for simple use cases
+
+#### **2. Resource Management**
+**Benefits:**
+- ✅ Access to external data sources
+- ✅ Document browsing capabilities
+- ✅ Real-time resource updates
+
+**Tradeoffs:**
+- ❌ Resource synchronization complexity
+- ❌ Access control management
+
+#### **3. Streaming Responses**
+**Benefits:**
+- ✅ Real-time response streaming
+- ✅ Better user experience
+- ✅ Progressive disclosure
+
+**Tradeoffs:**
+- ❌ Implementation complexity
+- ❌ Error handling challenges
+
+### 🚀 **MCP Deployment Options**
+
+#### **1. Local Development**
+```
+┌─────────────┐    ┌─────────────┐
+│   Local     │───▶│   MCP       │
+│   AI Tool   │    │   Server    │
+└─────────────┘    └─────────────┘
+```
+**Tradeoffs:**
+- ✅ Simple setup, fast development
+- ❌ Limited scalability, single user
+
+#### **2. Cloud Deployment**
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│   Cloud     │───▶│   Load      │───▶│   MCP       │
+│   AI Tool   │    │ Balancer    │    │   Servers   │
+└─────────────┘    └─────────────┘    └─────────────┘
+```
+**Tradeoffs:**
+- ✅ Scalability, high availability
+- ❌ Infrastructure complexity, costs
+
+### 📊 **MCP Benefits Summary**
+
+| Feature | Benefit | Tradeoff |
+|---------|---------|----------|
+| **Standardized Interface** | Consistent API across AI assistants | Protocol overhead |
+| **Tool Discovery** | Automatic capability detection | Implementation complexity |
+| **Resource Management** | Access to external data sources | Access control complexity |
+| **Streaming Support** | Real-time responses | Error handling complexity |
+| **Extensibility** | Easy to add new tools | Learning curve |
+| **Vendor Independence** | No lock-in to specific AI tools | Additional abstraction layer |

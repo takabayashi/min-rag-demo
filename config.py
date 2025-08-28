@@ -6,7 +6,7 @@ import os
 from pathlib import Path
 
 # Document settings
-DOCS_DIR = Path('./docs/')
+DOCS_DIR = Path('./faqs/')
 SUPPORTED_EXTENSIONS = ['.md']
 
 # Chunking settings
@@ -20,11 +20,11 @@ EMBEDDING_MODEL = "nomic-embed-text"
 
 # Retrieval settings
 DEFAULT_K = 5
-DEFAULT_THRESHOLD = 1.0
+DEFAULT_THRESHOLD = 0.6
 
 # LLM settings
-DEFAULT_TEMPERATURE = 0
-OLLAMA_MODEL = "deepseek-r1" #deepseek-r1, mistral, llama3.1, gpt-oss:latest
+DEFAULT_TEMPERATURE = 0.4
+OLLAMA_MODEL = "gpt-oss:latest" #deepseek-r1, mistral, llama3.1, gpt-oss:latest
 OPENAI_MODEL = "gpt-3.5-turbo"
 
 # Environment variables
